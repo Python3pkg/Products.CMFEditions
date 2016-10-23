@@ -17,6 +17,9 @@ Bug fixes:
 - Make tests run in Zope 4 (includes some cleanup).
   [pbauer]
 
+- Get rid of CMFFormController scripts
+  [tomgross]
+
 
 3.0 (2016-12-05)
 ----------------
@@ -49,7 +52,6 @@ Bug fixes:
 
 - Do not log using plone restricted python logging script.
   [jensens]
-
 
 2.2.21 (2016-08-18)
 -------------------
