@@ -32,7 +32,7 @@ class DiffView(BrowserView):
         version_name = self.versionName(version)
 
         return translate(
-            _(u"version ${version}",
+            _("version ${version}",
               mapping=dict(version=version_name)),
             context=self.request
         )
@@ -46,7 +46,7 @@ class DiffView(BrowserView):
         getId = history_metadata.getVersionId
         history = self.history = []
         # Count backwards from most recent to least recent
-        for i in xrange(history_metadata.getLength(countPurged=False)-1, -1, -1):
+        for i in range(history_metadata.getLength(countPurged=False)-1, -1, -1):
             version = retrieve(i, countPurged=False)['metadata'].copy()
             version['version_id'] = getId(i, countPurged=False)
             history.append(version)

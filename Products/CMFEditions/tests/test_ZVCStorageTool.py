@@ -39,10 +39,10 @@ from Products.CMFEditions.interfaces.IStorage import StorageRetrieveError
 
 from Products.CMFCore.indexing import processQueue
 
-from DummyTools import Dummy as Dummy
-from DummyTools import DummyPurgePolicy
-from DummyTools import MemoryStorage
-from DummyTools import notifyModified
+from .DummyTools import Dummy as Dummy
+from .DummyTools import DummyPurgePolicy
+from .DummyTools import MemoryStorage
+from .DummyTools import notifyModified
 
 
 class DummyOM(ObjectManager):
@@ -452,7 +452,7 @@ class TestZVCStorageTool(CMFEditionsBaseTestCase):
         portal_storage.register(1, ObjectData(obj1),
                                 metadata=self.buildMetadata('saved v1'))
         portal_storage.save(1, ObjectData(obj1),
-                            metadata=self.buildMetadata(u'saved v1\xc3\xa1'))
+                            metadata=self.buildMetadata('saved v1\xc3\xa1'))
 
     def test14_getHistoryMetadata(self):
         portal_storage = self.portal.portal_historiesstorage
@@ -561,13 +561,13 @@ class TestZVCStorageTool(CMFEditionsBaseTestCase):
         self.assertEqual(expected['deleted'], got['deleted'])
         self.assertTrue('summaries' in got)
         self.assertTrue('time' in got['summaries'])
-        for key, value in expected['summaries'].items():
+        for key, value in list(expected['summaries'].items()):
             self.assertEqual(value, got['summaries'][key])
         self.assertEqual(len(expected['existing']), len(got['existing']))
         for idx in range(len(expected['existing'])):
             exp = expected['existing'][idx]
             actual = got['existing'][idx]
-            for key, value in exp.items():
+            for key, value in list(exp.items()):
                 self.assertEqual(actual[key], value)
             # The actual size is not important and we want robust tests,
             # s. https://github.com/plone/Products.CMFEditions/issues/31

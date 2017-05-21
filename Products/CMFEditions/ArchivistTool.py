@@ -25,8 +25,8 @@ $Id: ArchivistTool.py,v 1.15 2005/06/24 11:34:08 gregweb Exp $
 """
 
 import time
-from StringIO import StringIO
-from cPickle import Pickler, Unpickler
+from io import StringIO
+from pickle import Pickler, Unpickler
 from zope.interface import implementer, alsoProvides
 
 from App.class_init import InitializeClass
@@ -535,7 +535,7 @@ class GetItemIterator:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self._pos += 1
         try:
             return self._getItem(self._pos)

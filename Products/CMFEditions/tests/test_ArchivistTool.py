@@ -31,11 +31,11 @@ from zope.interface.verify import verifyObject
 from Products.CMFEditions.interfaces.IArchivist import IArchivist
 from Products.CMFEditions.interfaces.IArchivist import IPurgeSupport
 
-from DummyTools import DummyModifier
-from DummyTools import DummyHistoryIdHandler
-from DummyTools import MemoryStorage
-from DummyTools import notifyModified
-from DummyTools import FolderishContentObjectModifier
+from .DummyTools import DummyModifier
+from .DummyTools import DummyHistoryIdHandler
+from .DummyTools import MemoryStorage
+from .DummyTools import notifyModified
+from .DummyTools import FolderishContentObjectModifier
 
 
 class TestArchivistToolMemoryStorage(CMFEditionsBaseTestCase):

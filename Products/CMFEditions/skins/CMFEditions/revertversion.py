@@ -24,21 +24,21 @@ else:
     view_url = context.absolute_url()
 
 title = context.title_or_id()
-if not isinstance(title, unicode):
-    title = unicode(title, 'utf-8', 'ignore')
+if not isinstance(title, str):
+    title = str(title, 'utf-8', 'ignore')
 
-msg = _(u'${title} has been reverted to revision ${version}.',
+msg = _('${title} has been reverted to revision ${version}.',
         mapping={'title': title,
                  'version': version_id})
 
 if pr.supportsPolicy(context, 'version_on_revert'):
     try:
-        commit_msg = context.translate(_(u'Reverted to revision ${version}',
+        commit_msg = context.translate(_('Reverted to revision ${version}',
                                        mapping={'version': version_id}))
         pr.save(obj=context, comment=commit_msg)
     except FileTooLargeToVersionError:
         putils.addPortalMessage(
-  _(u'The most current revision of the file could not be saved before reverting '
+  _('The most current revision of the file could not be saved before reverting '
     'because the file is too large.'),
        type='warn'
        )

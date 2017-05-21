@@ -61,6 +61,7 @@ from Products.CMFEditions.Permissions import RevertToPreviousVersions
 from Products.CMFEditions.Permissions import ManageVersioningPolicies
 from Products.CMFEditions.VersionPolicies import VersionPolicy
 from Products.CMFEditions.utilities import STUB_OBJECT_PREFIX
+import collections
 
 try:
     from Products.Archetypes.event import ObjectEditedEvent
@@ -119,7 +120,7 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
     def _migrateVersionPolicies(self):
         if not isinstance(self._policy_defs, OOBTree):
             btree_defs = OOBTree()
-            for obj_id, title in self._policy_defs.items():
+            for obj_id, title in list(self._policy_defs.items()):
                 btree_defs[obj_id] = VersionPolicy(obj_id, title)
             self._policy_defs = btree_defs
 
@@ -184,10 +185,10 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
     security.declareProtected(ManageVersioningPolicies, 'manage_setTypePolicies')
     def manage_setTypePolicies(self, policy_map, **kw):
         assert isinstance(policy_map, dict)
-        for p_type, policies in self._version_policy_mapping.items():
+        for p_type, policies in list(self._version_policy_mapping.items()):
             for policy_id in list(policies):
                 self.removePolicyFromContentType(p_type, policy_id, **kw)
-        for p_type, policies in policy_map.items():
+        for p_type, policies in list(policy_map.items()):
             assert isinstance(policies, list), \
                 "Policy list for %s must be a list" % str(p_type)
             for policy_id in policies:
@@ -199,7 +200,7 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
     def listPolicies(self):
         # convert the internal dict into a sequence of tuples
         # sort on title
-        policy_list = [(p.Title(), p) for p in self._policy_defs.values()]
+        policy_list = [(p.Title(), p) for p in list(self._policy_defs.values())]
         policy_list.sort()
         policy_list = [p for (title, p) in policy_list]
         return policy_list
@@ -212,7 +213,7 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
 
     security.declareProtected(ManageVersioningPolicies, 'removePolicy')
     def removePolicy(self, policy_id, **kw):
-        for p_type in self._version_policy_mapping.keys():
+        for p_type in list(self._version_policy_mapping.keys()):
             self.removePolicyFromContentType(p_type, policy_id, **kw)
         self._callPolicyHook('remove', policy_id, **kw)
         del self._policy_defs[policy_id]
@@ -230,9 +231,9 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
                 "List items must be tuples: %s" % str(item)
             assert len(item) in (2, 3, 4), \
                 "Each policy definition must contain a title and id: %s" % str(item)
-            assert isinstance(item[0], basestring), \
+            assert isinstance(item[0], str), \
                 "Policy id must be a string: %s" % str(item[0])
-            assert isinstance(item[1], basestring), \
+            assert isinstance(item[1], str), \
                 "Policy title must be a string: %s" % str(item[1])
             # Get optional Policy class and kwargs.
             if len(item) >= 3:
@@ -262,7 +263,7 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
                 del self._policy_defs["version_on_rollback"]
 
         hook = getattr(self._policy_defs[policy_id], HOOKS[action], None)
-        if hook is not None and callable(hook):
+        if hook is not None and isinstance(hook, collections.Callable):
             portal = getToolByName(self, 'portal_url').getPortalObject()
             hook(portal, *args, **kw)
 
@@ -461,16 +462,16 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
         #   reference
         # - on outside references only set a version aware reference
         #   (if under version control)
-        inside_refs = map(lambda original_refs, clone_refs:
+        inside_refs = list(map(lambda original_refs, clone_refs:
                           (original_refs, clone_refs.getAttribute()),
-                          prep.original.inside_refs, prep.clone.inside_refs)
+                          prep.original.inside_refs, prep.clone.inside_refs))
         for orig_ref, clone_ref in inside_refs:
             self._recursiveSave(orig_ref, app_metadata, sys_metadata,
                                 autoapply)
             clone_ref.setReference(orig_ref, remove_info=True)
 
-        outside_refs = map(lambda oref, cref: (oref, cref.getAttribute()),
-                           prep.original.outside_refs, prep.clone.outside_refs)
+        outside_refs = list(map(lambda oref, cref: (oref, cref.getAttribute()),
+                           prep.original.outside_refs, prep.clone.outside_refs))
         for orig_ref, clone_ref in outside_refs:
             clone_ref.setReference(orig_ref, remove_info=True)
 
@@ -558,7 +559,7 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
         # Replace the objects attributes retaining identity.
         _missing = object()
         attrs_to_leave = vdata.attr_handling_references
-        for key, val in vdata.data.object.__dict__.items():
+        for key, val in list(vdata.data.object.__dict__.items()):
             if key in attrs_to_leave:
                 continue
             obj_val = getattr(aq_base(obj), key, _missing)  # noqa
@@ -695,7 +696,7 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
 
     def _fixIds(self, obj):
         items = getattr(obj, 'objectItems', None)
-        if callable(items):
+        if isinstance(items, collections.Callable):
             temp_ids = []
             # find sub-objects whose id doesn't match the name in the container
             # remove them from the folder temporarily. This could probably be made
@@ -733,7 +734,7 @@ class CopyModifyMergeRepositoryTool(UniqueObject,
         """Create a Content Test Hierarchy
         """
         # XXX to be allowed in test mode only
-        from StorageMigrationSupport import createTestHierarchy
+        from .StorageMigrationSupport import createTestHierarchy
         createTestHierarchy(context)
 
 
@@ -816,7 +817,7 @@ class GetItemIterator:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self._pos += 1
         try:
             return self._getItem(self._pos)

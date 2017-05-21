@@ -28,8 +28,8 @@ __version__ = "$Revision: 1.18 $"
 import logging
 import time
 import types
-from StringIO import StringIO
-from cPickle import Pickler, Unpickler, dumps, loads, HIGHEST_PROTOCOL
+from io import StringIO
+from pickle import Pickler, Unpickler, dumps, loads, HIGHEST_PROTOCOL
 from zope.interface import implementer
 
 from App.class_init import InitializeClass
@@ -98,7 +98,7 @@ def getSize(obj):
 
     try:
         # string
-        if isinstance(obj, types.StringTypes):
+        if isinstance(obj, str):
             return len(obj)
     except:
         pass
@@ -556,7 +556,7 @@ class ZVCStorageTool(UniqueObject, SimpleItem):
             "preparing history mapping CMFEditions <--> ZVC")
         hidMapping = self._history_id_mapping
         hidReverseMapping = {}
-        for hid, zvcHid in hidMapping.items():
+        for hid, zvcHid in list(hidMapping.items()):
             hidReverseMapping[zvcHid.history_id] = hid
             logger.log(logging.INFO, "CMFEditions storage migration:"
                 " %6i <--> %s" % (hid, zvcHid.history_id))
@@ -567,7 +567,7 @@ class ZVCStorageTool(UniqueObject, SimpleItem):
         nbrOfMigratedHistories = 0
         nbrOfMigratedVersions = 0
         repo = self._getZVCRepo()
-        for zvcHid in repo._histories.keys():
+        for zvcHid in list(repo._histories.keys()):
             zvcHistory = repo.getVersionHistory(zvcHid)
             zvcVersionIds = zvcHistory.getVersionIds()
             history_id = hidReverseMapping[zvcHid]
@@ -609,14 +609,14 @@ class ZVCStorageTool(UniqueObject, SimpleItem):
                 if app_metadata:
                     logger.log(logging.INFO, "CMFEditions storage migration:"
                         " application metadata:")
-                    for item in app_metadata.items():
+                    for item in list(app_metadata.items()):
                         logger.log(logging.INFO,
                             "CMFEditions storage migration: %s = %s" % item)
                 sys_metadata = metadata.get("sys_metadata", {})
                 if sys_metadata:
                     logger.log(logging.INFO, "CMFEditions storage migration:"
                         " system metadata:")
-                    for item in sys_metadata.items():
+                    for item in list(sys_metadata.items()):
                         logger.log(logging.INFO,
                             "CMFEditions storage migration: %s = %s" % item)
                 nbrOfMigratedVersions += 1
@@ -654,7 +654,7 @@ class ZVCStorageTool(UniqueObject, SimpleItem):
 
         # collect interesting informations
         histories = []
-        for hid in historyIds.keys():
+        for hid in list(historyIds.keys()):
             history = self.getHistory(hid)
             length = len(history)
             shadowStorage = self._getShadowHistory(hid)
@@ -1044,7 +1044,7 @@ class GetItemIterator:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self._pos += 1
         try:
             return self._getItem(self._pos)

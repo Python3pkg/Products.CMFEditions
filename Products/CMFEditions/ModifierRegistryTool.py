@@ -138,7 +138,7 @@ class ModifierRegistryTool(UniqueObject, OrderedFolder):
         for id, mod in self._collectModifiers(obj, IAttributeModifier):
             # prepend the modifiers id to the attributes name
             template = '%s/%%s' % id
-            for name, attrs in mod.getReferencedAttributes(obj).items():
+            for name, attrs in list(mod.getReferencedAttributes(obj).items()):
                 referenced_data[template % name] = attrs
 
         # the return value is of the format:
@@ -155,7 +155,7 @@ class ModifierRegistryTool(UniqueObject, OrderedFolder):
         #     {'<modifier_id>': {'<name>':< refrenced_data>, ...}, ...}
         data_by_modid = {}
 
-        for id_name, data in referenced_data.items():
+        for id_name, data in list(referenced_data.items()):
             id, name = id_name.split('/', 1)
             if not id in data_by_modid:
                 data_by_modid[id] = {}

@@ -28,8 +28,8 @@ from Products.CMFEditions.tests.base import CMFEditionsBaseTestCase
 from zope.interface.verify import verifyObject
 from Products.CMFEditions.interfaces.IPurgePolicy import IPurgePolicy
 
-from DummyTools import PurgePolicyTestDummyStorage
-from DummyTools import DummyData, RemovedData
+from .DummyTools import PurgePolicyTestDummyStorage
+from .DummyTools import DummyData, RemovedData
 
 
 class TestKeepLastNVersionsTool(CMFEditionsBaseTestCase):

@@ -26,7 +26,8 @@
 """
 
 import os,sys
-from itertools import izip
+import collections
+
 from App.class_init import InitializeClass
 from zope.copy import copy
 
@@ -573,7 +574,7 @@ class OMInsideChildrensModifier(OMBaseModifier):
 
         # (3) build the list of adapters to the references to be removed
         refs_to_be_deleted = \
-            [OMSubObjectAdapter(obj, name) for name in orig_histids.values()]
+            [OMSubObjectAdapter(obj, name) for name in list(orig_histids.values())]
 
         # return all attribute names that have something to do with
         # referencing
@@ -686,7 +687,7 @@ class RetainPermissionsSettings:
 
         # replace the permission stuff of the repository clone by the
         # one of the working copy or delete it
-        for key, val in obj.__dict__.items():
+        for key, val in list(obj.__dict__.items()):
             # Find permission settings
             if key.startswith('_') and key.endswith('_Permission'):
                 setattr(repo_clone, key, val)
@@ -722,7 +723,7 @@ class RetainUIDs:
         uid = getattr(aq_base(obj), 'UID', None)
         get_clone_annos = getattr(
             aq_base(repo_clone), '_getReferenceAnnotations', None)
-        if (UUID_ATTR is not None and uid is not None and callable(obj.UID)
+        if (UUID_ATTR is not None and uid is not None and isinstance(obj.UID, collections.Callable)
             and get_clone_annos is not None):
             working_atuid = obj.UID()
             repo_uid = repo_clone.UID()
@@ -812,7 +813,7 @@ class SaveFileDataInFileTypeByReference:
     def reattachReferencedAttributes(self, obj, attrs_dict):
 
         obj = aq_base(obj)
-        for name, attr_value in attrs_dict.items():
+        for name, attr_value in list(attrs_dict.items()):
             setattr(obj, name, attr_value)
 
 
@@ -890,7 +891,7 @@ class SkipRegistryBasesPointers:
 
         def persistent_id(obj):
             obj_id = id(aq_base(obj))
-            for key, bases in component_bases.iteritems():
+            for key, bases in component_bases.items():
                 if obj_id in bases:
                     return '%s:%s' % (key, obj_id)
             return None
@@ -1009,21 +1010,21 @@ class AbortVersioningOfLargeFilesAndImages(ConditionalTalesModifier):
             for name in annotation_names:
                 val = annotations.get(name, None)
                 # Skip linked Pdata chains too long for the pickler
-                if hasattr(aq_base(val), 'getSize') and callable(val.getSize):
+                if hasattr(aq_base(val), 'getSize') and isinstance(val.getSize, collections.Callable):
                     try:
                         size = val.getSize()
                     except (TypeError,AttributeError):
                         size = None
-                    if isinstance(size, (int, long)) and size >= max_size:
+                    if isinstance(size, int) and size >= max_size:
                         yield 'annotation', name, val
 
         # Search for fields stored via AttributeStorage
         for name in self.field_names:
             val = getattr(obj, name, None)
             # Skip linked Pdata chains too long for the pickler
-            if hasattr(aq_base(val), 'getSize') and callable(val.getSize):
+            if hasattr(aq_base(val), 'getSize') and isinstance(val.getSize, collections.Callable):
                 size = val.getSize()
-                if isinstance(size, (int, long)) and size >= max_size:
+                if isinstance(size, int) and size >= max_size:
                     yield 'attribute', name, val
 
     def getOnCloneModifiers(self, obj):
@@ -1041,7 +1042,7 @@ class LargeFilePlaceHolder(object):
     """PlaceHolder for a large object"""
     @staticmethod
     def getSize():
-        return sys.maxint
+        return sys.maxsize
 
 @implementer(IConditionalTalesModifier, ICloneModifier,
                       ISaveRetrieveModifier)
@@ -1190,7 +1191,7 @@ class CloneBlobs:
                 if (os.fstat(prior_file.fileno()).st_size ==
                     os.fstat(blob_file.fileno()).st_size):
                     # Files are the same size, compare line by line
-                    for line, prior_line in izip(blob_file, prior_file):
+                    for line, prior_line in zip(blob_file, prior_file):
                         if line != prior_line:
                             break
                     else:
@@ -1211,7 +1212,7 @@ class CloneBlobs:
 
     def reattachReferencedAttributes(self, obj, attrs_dict):
         obj = aq_base(obj)
-        for name, blob in attrs_dict.iteritems():
+        for name, blob in attrs_dict.items():
             obj.getField(name).get(obj).setBlob(blob)
 
     def getOnCloneModifiers(self, obj):
@@ -1267,7 +1268,7 @@ class Skip_z3c_blobfile:
         if not blob_file_classes:
             return
 
-        blob_refs = set(id(v) for v in obj.__dict__.itervalues()
+        blob_refs = set(id(v) for v in obj.__dict__.values()
                         if isinstance(v, blob_file_classes))
 
         def persistent_id(obj):
@@ -1291,7 +1292,7 @@ class Skip_z3c_blobfile:
         if obj is None:
             return [], [], {}
 
-        blob_fields = ((k, v) for k, v in obj.__dict__.iteritems()
+        blob_fields = ((k, v) for k, v in obj.__dict__.items()
                         if isinstance(v, blob_file_classes))
 
         for k, v in blob_fields:

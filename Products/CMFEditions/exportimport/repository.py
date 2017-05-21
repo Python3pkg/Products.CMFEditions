@@ -116,7 +116,7 @@ class RepositoryToolXMLAdapter(XMLAdapterBase):
 
     def _extractTypePolicies(self):
         node = self._doc.createElement('policymap')
-        mapping = self.context.getPolicyMap().items()
+        mapping = list(self.context.getPolicyMap().items())
         mapping.sort()
         for portal_type, policies in mapping:
             t = self._doc.createElement('type')

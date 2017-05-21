@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
-from cPickle import Pickler, Unpickler
-from StringIO import StringIO
+from pickle import Pickler, Unpickler
+from io import StringIO
 import types
 
 from zope.interface import implementer
@@ -339,7 +339,7 @@ class FolderishContentObjectModifier(DummyBaseTool):
 
         # do not pickle the big blob attributes
         base_obj = aq_base(obj)
-        for attr in self.getReferencedAttributes(obj).keys():
+        for attr in list(self.getReferencedAttributes(obj).keys()):
             try:
                 pyid = id(getattr(base_obj, attr))
             except AttributeError:
@@ -396,7 +396,7 @@ class FolderishContentObjectModifier(DummyBaseTool):
 
     def reattachReferencedAttributes(self, object, referenced_data):
         # just a dead simple test implementation
-        for key, value in referenced_data.items():
+        for key, value in list(referenced_data.items()):
             setattr(object, key, value)
 
     def _getAttributeNamesHandlingSubObjects(self, obj):
@@ -469,7 +469,7 @@ class MemoryStorage(DummyBaseTool):
 
     def register(self, history_id, object, referenced_data={}, metadata=None):
         histories = self._histories
-        if history_id not in histories.keys():
+        if history_id not in list(histories.keys()):
            return self._save(history_id, object, referenced_data, metadata)
 
     def save(self, history_id, object, referenced_data={}, metadata=None):
@@ -481,7 +481,7 @@ class MemoryStorage(DummyBaseTool):
             if not policy.beforeSaveHook(history_id, metadata):
                 return len(self._histories[history_id]) - 1
 
-        if not self._histories.has_key(history_id):
+        if history_id not in self._histories:
             raise StorageUnregisteredError(
                 "Saving or retrieving an unregistered object is not "
                 "possible. Register the object with history id '%s' first. "
@@ -494,7 +494,7 @@ class MemoryStorage(DummyBaseTool):
         histories = self._histories
         cloned_referenced_data = {}
 
-        for key, ref in referenced_data.items():
+        for key, ref in list(referenced_data.items()):
             # a real storage may treat IStreamableReference obj differently
             if IStreamableReference.providedBy(ref):
                 cloned_referenced_data[key] = deepCopy(ref.getObject())
@@ -503,7 +503,7 @@ class MemoryStorage(DummyBaseTool):
         vdata = StorageVersionData(object=deepCopy(object),
                                    referenced_data=cloned_referenced_data,
                                    metadata=metadata)
-        if history_id in histories.keys():
+        if history_id in list(histories.keys()):
             histories[history_id].append(vdata)
         else:
             histories[history_id] = [vdata]
@@ -610,7 +610,7 @@ class MemoryStorage(DummyBaseTool):
         return length
 
 
-class HistoryList(types.ListType):
+class HistoryList(list):
     """
     """
     def __getitem__(self, selector):

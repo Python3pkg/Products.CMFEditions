@@ -38,8 +38,8 @@ from Products.CMFEditions.interfaces.IRepository import IVersionData
 from Products.CMFEditions.VersionPolicies import VersionPolicy
 from Products.CMFEditions.VersionPolicies import ATVersionOnEditPolicy
 
-from DummyTools import DummyArchivist
-from DummyTools import notifyModified
+from .DummyTools import DummyArchivist
+from .DummyTools import notifyModified
 
 class dummyPolicyWithHooks(VersionPolicy):
     """A dummy policy to test the hooks"""
